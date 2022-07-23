@@ -1,0 +1,341 @@
+openapi: 3.0.0
+info:
+  title: Cointab
+  version: '1.0'
+  description: Cointab API Specification
+  license:
+    name: Apache-2.0
+servers:
+  - url: 'https://app.cointab.in:52270'
+    description: Cointab Production Base URL
+paths:
+  /sdk/RegisterDevice/1.0/:
+    post:
+      summary: Register Device
+      operationId: RegisterDevice
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  f1:
+                    type: string
+                    enum:
+                      - '1'
+                      - '2'
+                  h3:
+                    type: string
+                    description: Device Identifier. Sent in subsequent requests as the `h3` header.
+                    pattern: '^[A-Z]{32}$'
+                    minLength: 32
+                    maxLength: 32
+                  f10:
+                    type: string
+                    description: SMS Text
+                  f13:
+                    type: string
+                    description: |
+                      The number where the SMS must be sent
+                  f236:
+                    type: string
+                required:
+                  - f1
+              examples:
+                Successful Response:
+                  value:
+                    f1: '1'
+                    h3: AFD03C0827794F31976ED0E2E6A602A4
+                    f10: COINTAB-MOBILE-APP-REGISTRATION-CODE-3UV1U56XA/W68T3E+6Q=7ZNTS0V7UX3DHJ9*ILU=P1296ZW8AXCT/+93Q65=
+                    f13: '+918105324001'
+                    f236: upi
+                Failure Response:
+                  value:
+                    f1: '2'
+      description: 'Device Registration against the Cointab API. Generates the SMS text, and provides the Device ID that will be used against subsequent requests.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                f3:
+                  type: string
+                  description: Device ID
+                f4:
+                  type: string
+                  description: 'Device Identifier, optional'
+                f5:
+                  type: string
+                  description: 'Device Identifier, optional'
+                f6:
+                  type: string
+                  description: 'Device Identifier, optional'
+                f7:
+                  type: string
+                  description: OSVersion
+                f8:
+                  type: string
+                  description: DeviceManufacturer
+                f9:
+                  type: string
+                  description: DeviceModelNumber
+                f11:
+                  type: string
+                  description: android.os.Build.getSerial()
+                f106:
+                  type: number
+                  description: Latitude
+                f107:
+                  type: number
+                  description: Longitude
+                f108:
+                  type: string
+                  description: 'GeoCode, Location as String'
+                f600:
+                  type: string
+                  description: |
+                    ConnectionType
+              required:
+                - f3
+            examples:
+              Sample Minimal Request:
+                value:
+                  f3: deadbeef
+          application/xml:
+            schema:
+              type: object
+              properties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              example-1: {}
+        description: Body is generated from various device identifiers.
+      parameters: []
+    parameters: []
+  /sdk/StatusUserRegistration/1.0/:
+    post:
+      summary: Check User Registration Status
+      operationId: post-sdk-StatusUserRegistration-1.0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  f21:
+                    type: string
+                    description: JSON String containing user's registration details. Contains a `vpa` and a `status` field.
+                  h4:
+                    type: string
+                    description: User ID
+                  f12:
+                    type: boolean
+                    description: IsRegistered
+                  f13:
+                    type: number
+                    description: MobileNumber
+              examples:
+                User already registered:
+                  value:
+                    f21: '[{"vpa":"9663078862","status":1}]'
+                    f1: '1'
+                    f12: true
+                    h4: 9C9E67DDA7894D5C892EC3880E14A871
+                    f13: 919999111133
+      description: 'After you''ve sent the SMS (using the `RegisterDevice` endpoint), use this endpoint to validate your User Registration Status.'
+      security:
+        - h3: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                f2:
+                  type: number
+                  enum:
+                    - 1
+                f10:
+                  type: string
+                  description: |
+                    SMS String
+                f600:
+                  type: string
+                  description: |
+                    Connection Type
+                  enum:
+                    - WIFI
+                  example: WIFI
+              required:
+                - f2
+                - f10
+                - f600
+            examples:
+              Sample Request:
+                value:
+                  f2: 1
+                  f10: COINTAB-MOBILE-APP-REGISTRATION-CODE-566820W856WDYQ432KC=6O71H6T9*W32975FQYK=/714UDRX757Z5AOV94B=
+                  f600: WIFI
+        description: ''
+  /sdk/GetToken/1.0/:
+    post:
+      summary: GetToken
+      operationId: post-sdk-GetToken-1.0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  f1:
+                    type: string
+                    description: Status
+                  f16:
+                    type: string
+                    description: |
+                      APICode
+                  f273:
+                    type: string
+                    description: ''
+                required:
+                  - f1
+              examples:
+                Successful:
+                  value:
+                    f273: 0
+                    f1: '1'
+                    f16: F2850C65582143A08E3DAE2C8B34DE25B0EB445257B44883B86CF8CA8460EB7D
+                Failure:
+                  value:
+                    f1: 2
+      description: Sends the NPCI CL token to the server and gets the APICode
+      parameters: []
+      security:
+        - h3: []
+        - h4: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                f15:
+                  type: string
+                  description: IsChallengeInitial
+                f14:
+                  type: string
+                  description: TokenChallenge. This is what the Common Library getChallenge returns.
+                f600:
+                  type: string
+                  description: |
+                    ConnectionType
+                  enum:
+                    - WIFI
+                  example: WIFI
+              required:
+                - f15
+                - f14
+            examples:
+              Sample Request:
+                value:
+                  f15: true
+                  f14: Base64-encoded-string
+                  f600: WIFI
+  /sdk/StatusGetToken/1.0/:
+    post:
+      summary: StatusGetToken
+      operationId: post-sdk-StatusGetToken-1.0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  f120:
+                    type: string
+                    description: UPIStatus
+                  f273:
+                    type: string
+                  f17:
+                    type: string
+                    description: NPCIGetTokenResponse
+                  f1:
+                    type: string
+                    description: Status
+                required:
+                  - f1
+              examples:
+                Successful:
+                  value:
+                    f273: 0
+                    f120: 2
+                    f17: 55D/v4+cJ2Re4jqe7DXjnIXQJtRFlF6S1BNeT56rkwc=
+                    f1: '1'
+      description: Retrieve the GetToken API response
+      security:
+        - h3: []
+        - h4: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                f16:
+                  type: string
+                  description: |
+                    `APICode` from the `GetToken` response
+                  pattern: '^[A-Z]{64}$'
+                  minLength: 64
+                  maxLength: 64
+                f600:
+                  type: string
+                  description: Connection Type
+                  enum:
+                    - WIFI
+                  example: WIFI
+              required:
+                - f16
+            examples:
+              Sample Request:
+                value:
+                  f16: F2850C65582143A08E3DAE2C8B34DE25B0EB445257B44883B86CF8CA8460EB7D
+                  f600: WIFI
+        description: ''
+components:
+  schemas: {}
+  securitySchemes:
+    h1:
+      name: APKUUID
+      type: apiKey
+      in: header
+      description: APK UUID. Set to `DD0EF473F08F43B2B4AF496D73320719`
+    h2:
+      type: apiKey
+      in: header
+      name: Random UUID (32)
+      description: A randomly generated UUID sent in every request.
+    h3:
+      name: Device UUID (32)
+      type: apiKey
+      in: header
+      description: Only set if available. See `RegisterDevice` response for value
+    h4:
+      name: User UUID (32)
+      type: apiKey
+      in: header
+      description: User's UUID
+security:
+  - h1: []
+  - h2: []
